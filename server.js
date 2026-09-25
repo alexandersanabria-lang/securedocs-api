@@ -1,5 +1,6 @@
 const express = require('express');
 const authRoutes = require('./src/routes/auth.routes');
+const documentosRoutes = require('./src/routes/documentos.routes');
 
 const app = express();
 app.use(express.json());
@@ -9,6 +10,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/documentos', documentosRoutes);
 
 const PORT = 3000;
 app.listen(PORT, () => {
