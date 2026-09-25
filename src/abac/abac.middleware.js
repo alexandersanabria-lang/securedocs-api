@@ -25,9 +25,9 @@ function cargarDocumento(req, res, next) {
 function verificarABAC(operacion) {
   return (req, res, next) => {
     const contexto = {
-      horaActual: new Date().getHours(),
-      dispositivo: req.headers['x-dispositivo'] || 'DESCONOCIDO',
-    };
+  horaActual: req.headers['x-hora-test'] ? parseInt(req.headers['x-hora-test']) : new Date().getHours(),
+  dispositivo: req.headers['x-dispositivo'] || 'DESCONOCIDO',
+};
 
     const resultado = evaluarPoliticas(req.usuario, req.documento, operacion, contexto);
     const recurso = `documento-${req.documento.id}`;
