@@ -15,4 +15,8 @@ router.delete('/prueba-eliminar', verificarToken, verificarRBAC('eliminar_docume
   res.json({ mensaje: 'RBAC OK: tienes permiso para eliminar documentos' });
 });
 
+router.post('/prueba-asignar-roles', verificarToken, verificarRBAC('asignar_roles'), (req, res) => {
+  res.json({ mensaje: 'RBAC OK: tienes permiso para asignar roles' });
+});
+
 module.exports = router;
