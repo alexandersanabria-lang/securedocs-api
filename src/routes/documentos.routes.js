@@ -3,8 +3,8 @@ const router = express.Router();
 const documentos = require('../data/documentos');
 const { verificarToken } = require('../auth/auth.middleware');
 const { autorizarDocumento, autorizarOperacion } = require('../middlewares/autorizacion.middleware');
+const { registrarEvento } = require('../audit/audit.service');
 
-// Crear documento — solo RBAC (no hay documento existente aún)
 router.post('/', verificarToken, ...autorizarOperacion('crear_documento'), (req, res) => {
   const { titulo, descripcion, departamento, nivel_confidencialidad, pais } = req.body;
 
@@ -27,15 +27,22 @@ router.post('/', verificarToken, ...autorizarOperacion('crear_documento'), (req,
   };
 
   documentos.push(nuevoDocumento);
+
+  registrarEvento({
+    usuario: req.usuario.correo,
+    recurso: `documento-${nuevoDocumento.id}`,
+    accion: 'CREATE',
+    resultado: 'PERMITIDO',
+    motivo: 'Documento creado exitosamente',
+  });
+
   res.status(201).json({ mensaje: 'Documento creado', documento: nuevoDocumento });
 });
 
-// Consultar documento — RBAC + ABAC
 router.get('/:id', verificarToken, ...autorizarDocumento('consultar_documento'), (req, res) => {
   res.json({ documento: req.documento });
 });
 
-// Modificar documento — RBAC + ABAC (incluye Política 3: propiedad)
 router.put('/:id', verificarToken, ...autorizarDocumento('modificar_documento'), (req, res) => {
   const { titulo, descripcion, nivel_confidencialidad, estado } = req.body;
 
@@ -47,20 +54,17 @@ router.put('/:id', verificarToken, ...autorizarDocumento('modificar_documento'),
   res.json({ mensaje: 'Documento modificado', documento: req.documento });
 });
 
-// Eliminar documento — RBAC + ABAC
 router.delete('/:id', verificarToken, ...autorizarDocumento('eliminar_documento'), (req, res) => {
   const index = documentos.findIndex(d => d.id === req.documento.id);
   documentos.splice(index, 1);
   res.json({ mensaje: 'Documento eliminado' });
 });
 
-// Aprobar documento — RBAC + ABAC
 router.post('/:id/aprobar', verificarToken, ...autorizarDocumento('aprobar_documento'), (req, res) => {
   req.documento.estado = 'PUBLICADO';
   res.json({ mensaje: 'Documento aprobado y publicado', documento: req.documento });
 });
 
-// Listar todos (útil para pruebas, sin restricción ABAC por documento individual)
 router.get('/', verificarToken, ...autorizarOperacion('consultar_documento'), (req, res) => {
   res.json({ documentos });
 });
